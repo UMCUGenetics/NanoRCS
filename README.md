@@ -15,7 +15,7 @@ Table of Content
 
 
 # Introduction
-NanoRCS (pronounced "Nano rocks") is a nanopore-based genome-wide Rolling Circle Amplification (RCA)-enhanced Consensus Sequencing method for cfDNA sequencing. 
+NanoRCS is a nanopore-based genome-wide Rolling Circle Amplification (RCA)-enhanced Consensus Sequencing method for cfDNA sequencing. 
 
 The repository was written by Li-Ting Chen and Myrthe Jager from [De Ridder lab](https://www.deridderlab.nl/) at the Center of Molecular Medicine, University Medical Center Utrecht, the Netherlands. 
 
