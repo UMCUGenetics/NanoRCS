@@ -65,10 +65,10 @@ ichorCNA was utilized in the study to detect CNA and derive tumor fraction from 
 #### 06_fragment_length_NMF_TF
 Fragmentomics is the analysis of cfDNA fragmentation patterns. We derived tumor fraction in cfDNA from fragment length distribution by NMF. 
 - Fig 4, 5, 6, Suppl Fig 5,6,8,10
-### 07_PCAWG_TF_limit_of_detection
+#### 07_PCAWG_TF_limit_of_detection
 A monte carlo simulation was used to derive the SNV limit of detection in populations of tumor patients with known tumor biopsy sequencing. 
 - Suppl Fig 9
-### 08_combine_multimodal_TF
+#### 08_combine_multimodal_TF
 Combine tumor fraction estimation generated from each modality.
 
 ### Generating figures
