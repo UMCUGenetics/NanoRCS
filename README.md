@@ -58,15 +58,18 @@ SNV error rate is derived from the bam file of 2 different sequencing techniques
 Tumor-informed somatic SNV detection in cfDNA samples focuses specifically on the sites where mutations have been observed in the tumor biopsy sequencing (derived from 00). 
 The count of mutant alleles versus wildtype alleles were aggregated from the cfDNA molecules overlapping the mutated genomic sites, resulting in mutation fraction. 
 An algorithm to derive tumor fraction in the cfDNA from the mutation fraction is implemented taken into account of variant VAF in the tumor VCF.
+- Figure 2D, E, F
 #### 05_cna
 ichorCNA was utilized in the study to detect CNA and derive tumor fraction from CNA. Settings of ichorCNA are supplied in this folder.  
 - Fig 3, 5, 6, Suppl Fig 3, 4, 8, 10
-#### 06_fragmentomics
+#### 06_fragment_length_NMF_TF
 Fragmentomics is the analysis of cfDNA fragmentation patterns. We derived tumor fraction in cfDNA from fragment length distribution by NMF. 
 - Fig 4, 5, 6, Suppl Fig 5,6,8,10
-### 07_snv_limit_of_detection
+### 07_PCAWG_TF_limit_of_detection
 A monte carlo simulation was used to derive the SNV limit of detection in populations of tumor patients with known tumor biopsy sequencing. 
 - Suppl Fig 9
+### 08_combine_multimodal_TF
+Combine tumor fraction estimation generated from each modality.
 
 ### Generating figures
 #### 10_figures
