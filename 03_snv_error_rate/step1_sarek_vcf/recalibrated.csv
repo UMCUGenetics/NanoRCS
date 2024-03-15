@@ -1,0 +1,4 @@
+patient,sex,status,sample,cram,crai
+HC01,XY,0,HC01-N,/hpc/ubec/processed_data/external/lchen/data/mapping/HC/preprocessing/recalibrated/HC01-N/HC01-N.recal.cram,/hpc/ubec/processed_data/external/lchen/data/mapping/HC/preprocessing/recalibrated/HC01-N/HC01-N.recal.cram.crai
+HC02,XX,0,HC02-N,/hpc/ubec/processed_data/external/lchen/data/mapping/HC/preprocessing/recalibrated/HC02-N/HC02-N.recal.cram,/hpc/ubec/processed_data/external/lchen/data/mapping/HC/preprocessing/recalibrated/HC02-N/HC02-N.recal.cram.crai
+HC03,XY,0,HC03-N,/hpc/ubec/processed_data/external/lchen/data/mapping/HC/preprocessing/recalibrated/HC03-N/HC03-N.recal.cram,/hpc/ubec/processed_data/external/lchen/data/mapping/HC/preprocessing/recalibrated/HC03-N/HC03-N.recal.cram.crai

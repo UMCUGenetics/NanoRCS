@@ -5,6 +5,6 @@ backbones:
 input_dir:
   "/path/to/input/bam"
 out_dir:
-  "./output/processed_data/NanoRCS/consensus_filtered"
+  "/path/to/NanoRCS/output/processed_data/01_preprocess_nanorcs/consensus_filtered"
 sample_tsv:
   "/path/to/samplesheet_example.csv"

@@ -1,0 +1,15 @@
+## Config file for snakemake pipeline
+out_dir: "/path/to/NanoRCS/output/processed_output/07_PCAWG_TF_limit_of_detection/"
+GEs: [0.04, 0.25, 0.6, 0.8, 1.5,  3]
+error_rates: [0.00744, 0.00082]
+tumor_fraction_min: 0.0001
+tumor_fraction_max: 1
+tumor_fraction_step: 50
+step_type: 'log' # 'log' or 'linear'
+## Change to folder path
+vaf_table_path: "/path/to/input/VCF-parsed/Ovarian-cancer/"
+cancer_type: Esophagus-cancer
+trials: 10000
+genome_size: 2_806_377_226
+## Genome size reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7002750/
+## 96.41% genome are defined as callable.

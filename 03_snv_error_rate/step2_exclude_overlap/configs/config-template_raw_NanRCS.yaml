@@ -1,0 +1,10 @@
+samples:
+  HC01_NANO:
+  HC02_NANO:
+  HC03_NANO:
+ins_bed: /path/to/combined/HC_ins.bed
+del_bed: /path/to/combined/HC_del.bed
+snv_bed: /path/to/combined/HC_snv.bed
+
+
+genome: /path/to/ref/genome/hs37d5.fasta

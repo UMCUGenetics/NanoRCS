@@ -25,7 +25,9 @@ rule all:
         expand(opj(out_dir, "results/filtered_ecco/{sample}.filtered.CRAM"), sample=config["samples"]),
         expand(opj(out_dir, "results/fragmentation/{sample}_insert_size_metrics.txt"), sample=config["samples"]),
         expand(opj(out_dir, "results/fragmentation_ecco/{sample}_insert_size_metrics.txt"), sample=config["samples"]),
-      	expand(opj(out_dir, "results/readDepth/{samples}.bin{binSize}.wig"), samples=config["samples"], binSize=str(config["binSize"])),
+        expand(opj(out_dir, "results/readDepth/{samples}.bin{binSize}.wig"), samples=config["samples"], binSize=str(config["binSize"])),
+        expand(opj(out_dir,"results/stats_ecco/{samples}.filtered.sorted.bam.stats_len.txt"), samples=config["samples"]),
+
 
 rule concat_fastq_gz:
     input:
@@ -261,6 +263,7 @@ rule filter_and_index_ecco:
         CRAM=opj(out_dir,"results/filtered_ecco/{sample}.filtered.CRAM"),
         bai=opj(out_dir,"results/filtered_ecco/{sample}.filtered.sorted.bam.bai"),
         stats=opj(out_dir,"results/stats_ecco/{sample}.filtered.sorted.bam.stats"),
+        FL=opj(out_dir,"results/stats_ecco/{sample}.filtered.sorted.bam.stats_len.txt"),
     params:
         genome = config['genome'],
         insert_size = 1200
@@ -280,6 +283,7 @@ rule filter_and_index_ecco:
         samtools sort {output.bam} > {output.sorted_bam};
         samtools index -@ {threads} {output.sorted_bam} > {output.bai};
         samtools stats -@ {threads} -i {params.insert_size} {output.sorted_bam} > {output.stats};
+        grep ^IS {output.stats} | cut -f 2- > {output.FL}
         """
 
 rule picard_InsertMatrix_ecco:

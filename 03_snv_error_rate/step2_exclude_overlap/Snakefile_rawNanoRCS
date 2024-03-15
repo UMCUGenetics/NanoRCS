@@ -1,0 +1,88 @@
+
+# This pipeline analyse the healthy control samples excluding the known snv positions in all 3 samples.
+# Step 1: collect bam file (1) with bb (2) without bb (3) all (4) untrimmed
+# Step 2: get bam files non-overlapping with bed file positions.
+# Step 3: calculate MN tag. Exclude reads with high MN tag.
+
+rule all:
+    input:
+        #expand("results/{sample}.done", sample=config['samples'])
+        #"results/{sample}.done"
+        expand("results/{sample}.done",  sample=config['samples'].keys())
+
+# /hpc/compgen/projects/gw_cfdna/gw_cyclomics/analysis/lchen/SNV_tumor_informed
+
+rule filter_and_index:
+    input:
+        lambda wildcards: config['samples'][wildcards.sample]
+    output:
+        bam=temp("results/filtered/{sample}.filtered.bam"),
+        sorted_bam = "results/filtered/{sample}.filtered.sorted.bam",
+        bai="results/filtered/{sample}.filtered.sorted.bam.bai",
+        CRAM="results/filtered/{sample}.filtered.CRAM",
+    params:
+        genome = config['genome'],
+    log: "results/logs/{sample}.filter_and_index.log.txt",
+    threads: 8
+    resources:
+        cpus=8,
+        runtime='16h',
+        mem_mb=8000,
+    conda: "envs/bio.yaml"
+    shell:
+        """
+        samtools view {input} -h -q 5 -F 4  -F 1024 -F 2048 -@ {threads} -b > {output.bam};
+        samtools view {input} -h -q 5 -F 4  -F 1024 -F 2048 -@ {threads} -T {params.genome} -C > {output.CRAM};
+        samtools sort {output.bam} > {output.sorted_bam};
+        samtools index -@ {threads} {output.sorted_bam} > {output.bai};
+        """
+        # -h: include header
+        # -q 5: only reads with quality >5
+        # -F 4: not unmapped
+        # -F 256: no secondary alignment; thus primary alignment
+        # -F 1024: no PCR duplicate
+
+rule bedtools_intersect:
+    input:
+        bam= rules.filter_and_index.output.sorted_bam,
+        snv_bed=config['snv_bed'],
+        ins_bed=config['ins_bed'],
+        del_bed=config['del_bed'],
+    output:
+        # snv_bed="results/{sample}_{bed}_overlap_snv.bed",
+        # all_bed="results/{sample}_{bed}_overlap_all.bed",
+        snv_bam="results/overlap/{sample}_overlap_snv.bam",
+        snv_bed="results/overlap/{sample}_overlap_snv.bed",
+        all_exclude_bam="results/overlap/{sample}_overlap_all_exclude.bam",
+        all_bed="results/overlap/{sample}_overlap_all.bed",
+        done= touch("results/{sample}.done"),
+    threads: 16
+    resources:
+        runtime='4h',
+        cpus = 1,
+        mem_mb = 64000,
+    priority: 50
+    conda:
+        "envs/bio.yaml"
+    shell:
+        """
+        bedtools intersect -wa -a {input.bam} -b {input.snv_bed} > {output.snv_bam};
+        bedtools intersect -wb -bed -a {input.bam} -b {input.snv_bed} > {output.snv_bed};
+        bedtools intersect -wa -v -a {input.bam} -b {input.snv_bed} {input.ins_bed} {input.del_bed} > {output.all_exclude_bam};
+        bedtools intersect -wb -bed -a {input.bam} -b {input.snv_bed} {input.ins_bed} {input.del_bed} > {output.all_bed};
+        """
+
+# Get reads in bam file overlapping with SNV file (bed format)
+# Get the coordinates of which overlaps happened.
+# Get reads not overlapping with SNVs (opposite from above). (-v)
+# Get the coordinates of which overlaps happened. (Including indels)
+
+#
+# onsuccess:
+#     print("Workflow finished, no error")
+#     shell("mail -s 'Workflow-illumina finished no error' l.t.chen-4@umcutrecht.nl <  {log}" )
+# onerror:
+#     print("An error occurred")
+#     shell("mail -s 'an error occurred' l.t.chen-4@umcutrecht.nl <  {log}" )
+#
+#

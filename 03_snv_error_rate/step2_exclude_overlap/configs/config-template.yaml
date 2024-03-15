@@ -1,0 +1,13 @@
+samples:
+  HC01_RCS: /path/to/consensusRCS_HC01.bam
+  HC01_NOVA:
+  HC02_RCS:
+  HC02_NOVA:
+  HC03_RCS:
+  HC03_NOVA
+ins_bed: /path/to/combined/HC_ins.bed
+del_bed: /path/to/combined/HC_del.bed
+snv_bed: /path/to/combined/HC_snv.bed
+
+
+genome: /path/to/ref/genome/hs37d5.fasta

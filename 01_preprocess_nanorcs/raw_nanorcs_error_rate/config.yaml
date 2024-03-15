@@ -1,0 +1,10 @@
+# Data could be retrieved from EGA
+input_path: /path/to/raw/fastq
+# Genome version
+genome:
+    /path/to/ref/genome/hs37d5.fasta
+samples:
+  - HC01_raw_nanorcs.fastq.gz
+  - HC02_raw_nanorcs.fastq.gz
+  - HC03_raw_nanorcs.fastq.gz
+mapq: 60

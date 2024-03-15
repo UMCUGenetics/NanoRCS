@@ -23,7 +23,7 @@ SAMPLE="SAMPLE_NAME"
 RUN="RUN_NAME"
 BACKBONE="BACKBONE_NAME"
 INPUT="/data/raw_data/GWC/${RUN}/pass"
-OUTPUT="./processed_data/NanoRCS/consensus/${SAMPLE}_${RUN}"
+OUTPUT="/path/to/output/processed_data/01_preprocess_nanorcs/consensus/${SAMPLE}_${RUN}"
 
 # Run command with nextflow
 nextflow run cyclomics/cyclomicsseq -r 0.9.0 --report false \
@@ -43,18 +43,22 @@ nextflow run cyclomics/cyclomicsseq -r 0.9.0 --report false \
 ```
 3. Downstream filtering: A snakemake workflow in this folder can be used for downstream filtering. After acquiring bam files from the standard cyclomicsseq bioinformatics pipeline, a specialized pipeline 
 to separate reads with backbone and reads without backbone was applied. This downstream filtering can also merge 
-multiple runs with same sample name and continue the analysis for the merged file. 
-`consensus_nanorcs` folder as a snakemake workflow. 
-4. Create (a) a samplesheet and (b) a configfile in folder `configs` accordingly.
-5. An example snakemake submission script:
+multiple runs with same sample name and continue the analysis for the merged file. Please continue in
+`consensus_nanorcs` folder, where you will find a snakemake workflow.
+4. Install snakemake in your environment (installation suggestion see snakemake website: https://snakemake.readthedocs.io/en/stable/getting_started/installation.html)
+5. Create (a) a samplesheet and (b) a configfile in folder `consensus_nanorcs/configs` accordingly.
+6. An example snakemake submission script at the folder `consensus_nanorcs`:
 ```angular2html
 snakemake --configfiles configs/config_example.yaml
 ```
+7. Expected output folder is defined in configs/config.yaml. As an example, we designed the output folder at 
+`NanoRCS/output/01_preprocess_nanorcs/consensus_filtered`. 
+8. Bam files for downstream analyses will appear within this folder with filenames: `NanoRCS/output/01_preprocess_nanorcs/consensus_filtered/final_bam/*_clean_merge_runs.bam`. Downstream analyses take bam files from here. 
+9. Library complexity estimation for Suppl. Fig 1 will appear at `NanoRCS/output/01_preprocess_nanorcs/consensus_filtered/bam_complexity`. Plotting scripts can be found in folder `10_figures`.
 
 ## II. Raw NanoRCS bam files for SNV error rate (Fig 2A). Folder:  raw_nanorcs_error_rate
 
-1. From fastq -> bam
-`raw_nanorcs_error_rate/`
+1. From fastq -> bam, use Snakemake pipeline in `raw_nanorcs_error_rate` after updating `config.yaml`. 
 
 2. From bam with all alignments -> bam with only first alignment
    1. Use first_align_nanorcs_wrapper.sh to submit `first_align_nanorcs.py` per chromosome.

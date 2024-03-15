@@ -1,0 +1,109 @@
+# Launch: snakemake --use-conda --cores all
+# configfile: "config-hpc.yaml"
+from snakemake import stats
+# import os
+# tmpdir_location = os.environ.get('SLURM_TMPDIR')
+from os.path import join as opj
+
+onstart:
+    shell("mkdir -p jobs_exceptions/out_of_memory")
+    shell("mkdir -p jobs_exceptions/out_of_time")
+
+#ruleorder: trimming_wrapper > trimming
+### Check how many lanes are used.\
+input_path =config['input_path']
+
+rule all:
+    input:
+        expand("output/minimap2/{sample}-mapq60.sorted.bam", sample=config["samples"]),
+
+
+rule minimap:
+    input:
+        fastq = opj(input_path,"{sample}"),
+    output:
+        sam = "output/minimap2/{sample}.sam",
+    log: "output/log/{sample}_minimap2.log",
+    params:
+        genome=config['genome'],
+        min_chain_score = 1,
+        min_peak_aln_score= 20,
+        min_chain_count = 10,
+    conda:
+        "envs/minimap2.yaml"
+    threads: 16
+    resources:
+        runtime="8h",
+        cpus= 8,
+        mem_mb= 64000,
+        disk_mb=128000,
+    shell:
+        """
+        minimap2 -ax map-ont -t {threads} -m {params.min_chain_score} -n {params.min_chain_count} -s {params.min_peak_aln_score} {params.genome} {input.fastq} > {output.sam}; 
+        """
+
+        # -h: include header
+        # -q 5: only reads with quality >5
+        # -F 4: not unmapped
+        # -F 256: no secondary alignment; thus primary alignment
+        # -F 1024: no PCR duplicate
+rule samtools_raw:
+    input:
+        rules.minimap.output.sam
+    output:
+        bam_raw_sorted="output/minimap2/{sample}.sorted.bam",
+    log: 
+        sort_raw="output/log/{sample}_samtools.sort_raw.log",
+        index_raw="output/log/{sample}_samtools.index_raw.log",
+    conda:
+        "envs/minimap2.yaml"
+    threads: 32
+    resources:
+        runtime="4h",
+        cpus= 16,
+        mem_mb= 64000,
+        disk_mb=128000,
+    shell:
+        """
+        samtools sort {input} > {output.bam_raw_sorted} 2> {log.sort_raw};
+        samtools index -@ {threads} {output.bam_raw_sorted} 2> {log.index_raw};
+        """
+
+rule samtools:
+    input:
+        rules.minimap.output.sam
+    output:
+        bam=temp("output/minimap2/{sample}-mapq60.bam"),
+        bam_sorted= "output/minimap2/{sample}-mapq60.sorted.bam",
+        bam60stats = "output/stats/{sample}-mapq60.sorted.bam.stats",
+    log: 
+        q60="output/log/{sample}_samtools.map_q60.log",
+        sort="output/log/{sample}_samtools.sort.log",
+        index="output/log/{sample}_samtools.index.log",
+        stats="output/log/{sample}_samtools.stats.log",
+    params:
+        genome=config['genome'],
+        min_chain_score = 1,
+        min_peak_aln_score= 20,
+        min_chain_count = 10,
+        mapq=config['mapq'],
+
+    conda:
+        "envs/minimap2.yaml"
+    threads: 32
+    resources:
+        runtime="4h",
+        cpus= 16,
+        mem_mb= 64000,
+        disk_mb=128000,
+    shell:
+        """
+        samtools view {input} -h -q {params.mapq} -F 4 -F 1024 -F 2048 -@ {threads} -b > {output.bam} 2> {log.q60};
+        samtools sort {output.bam} > {output.bam_sorted} 2> {log.sort};
+        samtools index -@ {threads} {output.bam_sorted} 2> {log.index};
+        samtools stats {output.bam_sorted} > {output.bam60stats} 2> {log.stats};    
+        """ 
+onsuccess:
+    print("Workflow Nanopore-raw finished, no error")
+onerror:
+    print("An error occurred")

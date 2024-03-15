@@ -95,6 +95,77 @@ rule all:
         expand(opj(out_dir, "final_bam/only-noBB/{sample_name}_all_noBB.bam"), sample_name=SAMPLES["sample_name"]),
         expand(opj(out_dir, "final_bam/{sample_name}_clean_merge_runs.bam"), sample_name=SAMPLES["sample_name"]),
         expand(opj(out_dir,"stats/{sample_name}_stats.txt"),sample_name=SAMPLES["sample_name"]),
+        expand(opj(out_dir, "stats/{combined_names}_len.txt"),combined_names=SAMPLES['combined_prefix']),
+        expand(opj(out_dir, "stats/wBB/{combined_names}_len.txt"),combined_names=SAMPLES['combined_prefix']),
+        expand(opj(out_dir, "bam_complexity/{combined_names}_library_complexity.txt"),combined_names=SAMPLES['combined_prefix']),
+        expand(opj(out_dir, "bam_complexity/fine/{combined_names}_library_complexity.txt"),combined_names=SAMPLES['combined_prefix']),
+
+rule library_complexity_fine:
+    input:
+        bam = opj(input_dir, "{sample_name}_{run_name}.YM_gt_3.bam"),
+    output:
+        bed = temp(opj(out_dir, "bam_complexity/tmp_bed/{sample_name}_{run_name}_2.bed")),
+        tmp_out = opj(out_dir, "bam_complexity/fine/log/{sample_name}_{run_name}_normal_mode_2.log"),
+        tmp_out2 = opj(out_dir, "bam_complexity/fine/log/{sample_name}_{run_name}_defect_mode_2.log"),
+        lc = opj(out_dir, "bam_complexity/fine/{sample_name}_{run_name}_library_complexity.txt"),
+    conda:
+        "envs/align.yaml"
+    resources:
+        runtime='1h',
+        cpus = 2,
+        mem_mb = 16000,
+    params:
+        max_est = 4000000,
+        step = 10000,
+    shell:
+      """
+      set +e
+      bedtools bamtobed -i {input.bam} > {output.bed};
+      /hpc/compgen/users/lchen/00_utils/preseq-3.2.0/preseq lc_extrap -e {params.max_est} -s {params.step} -o {output.lc} {output.bed} 2> {output.tmp_out};
+      if grep "ERROR" {output.tmp_out}; then
+            echo "Failed." > {output.lc}
+            echo "Handle error"
+            # Handle error here or run alternative command
+            /hpc/compgen/users/lchen/00_utils/preseq-3.2.0/preseq lc_extrap -e {params.max_est} -s {params.step} -D -o {output.lc} {output.bed} 2> {output.tmp_out2};
+            exit 0
+      else
+          echo "Normal mode" > {output.tmp_out2}
+          exit 0
+      fi
+      """
+
+rule library_complexity:
+    input:
+        bam = opj(input_dir, "{sample_name}_{run_name}.YM_gt_3.bam"),
+    output:
+        bed = temp(opj(out_dir, "bam_complexity/tmp_bed/{sample_name}_{run_name}.bed")),
+        tmp_out = opj(out_dir, "bam_complexity/log/{sample_name}_{run_name}_normal_mode.log"),
+        tmp_out2 = opj(out_dir, "bam_complexity/log/{sample_name}_{run_name}_defect_mode.log"),
+        lc = opj(out_dir, "bam_complexity/{sample_name}_{run_name}_library_complexity.txt"),
+    conda:
+        "envs/align.yaml"
+    resources:
+        runtime='1h',
+        cpus = 2,
+        mem_mb = 16000,
+    shell:
+      """
+      set +e
+      bedtools bamtobed -i {input.bam} > {output.bed};
+      /hpc/compgen/users/lchen/00_utils/preseq-3.2.0/preseq lc_extrap -o {output.lc} {output.bed} 2> {output.tmp_out};
+      if grep "ERROR" {output.tmp_out}; then
+            echo "Failed." > {output.lc}
+            echo "Handle error"
+            # Handle error here or run alternative command
+            /hpc/compgen/users/lchen/00_utils/preseq-3.2.0/preseq lc_extrap -D -o {output.lc} {output.bed} 2> {output.tmp_out2};
+            exit 0
+      else
+          echo "Normal mode" > {output.tmp_out2}
+          exit 0
+      fi
+      
+      """
+
 
 rule split_by_backbone:
     input:
@@ -134,9 +205,9 @@ rule deduplication_bam_with_bb:
         "envs/dedup-pip.yaml"
     priority: 2
     resources:
-        runtime='30h',
-        cpus = 1,
-        mem_mb = 10000,
+        runtime='48h',
+        cpus = 2,
+        mem_mb = 80000,
     shell:
         """
         dedup --read_bam {input.bam} \\
@@ -183,8 +254,7 @@ rule map_after_cutadapt:
         fastq = rules.cutadapt_remove_bb.output.adapter_cleaned_with_bb_fastq,
     params:
         ref=config['reference']
-    threads:
-        16
+    threads: 16
     output:
         sam=temp(opj(out_dir, "wBB/{sample_name}_{run_name}_reads_with_backbone_removed_adapter.sam")),
         adapter_cleaned_with_bb=opj(out_dir, "wBB/{sample_name}_{run_name}_dedup_cutadapt.bam"),
@@ -221,7 +291,7 @@ rule deduplication_without_bb:
         "envs/dedup-pip.yaml"
     priority: 2
     resources:
-        runtime='24h',
+        runtime='48h',
         cpus = 1,
         mem_mb = 10000,
     shell:
@@ -252,6 +322,28 @@ rule combine_dedup:
         """
         samtools merge -f {output.dedup_combined} {input.dedup_no_bb} {input.dedup_with_bb};
         samtools index {output.dedup_combined}
+        """
+
+
+rule get_sample_stats_per_run:
+    input:
+        bam = rules.combine_dedup.output.dedup_combined
+    output:
+        stats = opj(out_dir, "stats/{sample_name}_{run_name}_stats.txt"),
+        RL = opj(out_dir, "stats/{sample_name}_{run_name}_len.txt")
+    params:
+        samtools_target_region = "data/samtools_stats_target_regions.txt"
+    conda:
+        "envs/align.yaml"
+    priority: 50
+    resources:
+        runtime='1h',
+        cpus = 2,
+        mem_mb = 16000,
+    shell:
+        """
+        samtools stats -m 1.0 -t {params.samtools_target_region} {input.bam} > {output.stats};
+        grep ^RL {output.stats} | cut -f 2- > {output.RL}
         """
 
 
@@ -315,6 +407,33 @@ rule merge_all:
         """
         samtools merge -f {output.bam_per_sample_no_bb} {input.bams};
         samtools index {output.bam_per_sample_no_bb}
+        """
+
+
+rule get_sample_stats_noBB_wBB:
+    input:
+        bam_noBB = rules.merge_no_bb.output.bam_per_sample_no_bb,
+        bam_wBB = rules.merge_with_bb.output.bam_per_sample_no_bb, 
+    output:
+        stats_noBB = opj(out_dir, "stats/noBB/{sample_name}_{run_name}_noBB_stats.txt"),
+        stats_wBB = opj(out_dir, "stats/wBB/{sample_name}_{run_name}_wBB_stats.txt"),
+        RL_noBB = opj(out_dir, "stats/noBB/{sample_name}_{run_name}_len.txt"),
+        RL_wBB = opj(out_dir, "stats/wBB/{sample_name}_{run_name}_len.txt"),
+    params:
+        samtools_target_region = "data/samtools_stats_target_regions.txt"
+    conda:
+        "envs/align.yaml"
+    priority: 50
+    resources:
+        runtime='1h',
+        cpus = 2,
+        mem_mb = 16000,
+    shell:
+        """
+        samtools stats -m 1.0 -t {params.samtools_target_region} {input.bam_noBB} > {output.stats_noBB};
+        grep ^RL {output.stats_noBB} | cut -f 2- > {output.RL_noBB}
+        samtools stats -m 1.0 -t {params.samtools_target_region} {input.bam_wBB} > {output.stats_wBB};
+        grep ^RL {output.stats_wBB} | cut -f 2- > {output.RL_wBB}
         """
 
 

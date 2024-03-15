@@ -1,0 +1,3 @@
+[submodule "05_cna/ichorCNA"]
+	path = 05_cna/ichorCNA
+	url = git@github.com:zztin/ichorCNA.git

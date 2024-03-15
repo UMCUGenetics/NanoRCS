@@ -1,0 +1,92 @@
+# Config file for Snakemake workflow
+
+# Define the output directory
+out_dir: "/path/to/NanoRCS/output/processed_data/04_snv_tumor_informed/"
+
+# Rule specific params:
+min_qual: [40]
+
+# Sample specific configurations
+healthy_controls_bam:
+  HC01: "/path/to/HC01.bam"
+  HC02: "/path/to/HC02.bam"
+  HC03: "/path/to/HC03.bam"
+
+samples_bam:
+  OVCA01: "/path/to/sample.bam"
+  GCT01: "/path/to/sample.bam"  
+  GCT02: "/path/to/sample.bam"
+  OES01: "/path/to/sample.bam"
+  OES02: "/path/to/sample.bam"
+
+
+samples_bam_repeated:
+  GCT02-B4: "/path/to/samples/with/same/vcf/GCT02-B4.bam"
+  GCT02-B6: "/path/to/sample/with/same/vcf/GCT02-B6.bam"
+  GCT02-B9: "/path/to/sample/with/same/vcf/GCT02-B9.bam"
+  GCT02-B10: "/path/to/sample/with/same/vcf/GCT02-B10.bam"
+  GCT02-B11: "/path/to/sample/with/same/vcf/GCT02-B11.bam"
+  10PEROVCA01HC02: "/path/to/sample/with/same/vcf/10PEROVCA01HC02.bam"
+  2PEROVCA01HC02: "/path/to/sample/with/same/vcf/2PEROVCA01HC02.bam"
+  1PEROVCA01HC02: "/path/to/sample/with/same/vcf/1PEROVCA01HC02.bam"
+  05PEROVCA01HC02: "/path/to/sample/with/same/vcf/05PEROVCA01HC02.bam"
+
+vcf_repeated:
+  GCT02-B4: "/path/to/filtered_variants/GCT02_filtered_somatic.vcf.gz"
+  GCT02-B6: "/path/to/filtered_variants/GCT02_filtered_somatic.vcf.gz"
+  GCT02-B9: "/path/to/filtered_variants/GCT02_filtered_somatic.vcf.gz"
+  GCT02-B10: "/path/to/filtered_variants/GCT02_filtered_somatic.vcf.gz"
+  GCT02-B11: "/path/to/filtered_variants/GCT02_filtered_somatic.vcf.gz"
+  10PEROVCA01HC02: "/path/to/filtered_variants/OVCA1_filtered_somatic.vcf.gz"
+  2PEROVCA01HC02: "/path/to/filtered_variants/OVCA1_filtered_somatic.vcf.gz"
+  1PEROVCA01HC02: "/path/to/filtered_variants/OVCA1_filtered_somatic.vcf.gz"
+  05PEROVCA01HC02: "/path/to/filtered_variants/OVCA1_filtered_somatic.vcf.gz"
+
+vcf:
+  OVCA01: "/path/to/filtered_variants/OVCA1_filtered_somatic.vcf.gz"
+  GCT01: "/path/to/filtered_variants/GCT01_filtered_somatic.vcf.gz"
+  GCT02: "/path/to/filtered_variants/GCT02_filtered_somatic.vcf.gz"
+  OES01: "/path/to/filtered_variants/OES1_filtered_PASS_somatic.vcf.gz"
+  OES02: "/path/to/filtered_variants/OES2_filtered_PASS_somatic.vcf.gz"
+
+vcf_tf_repeated:
+  10PEROVCA01HC02: 0.60
+  2PEROVCA01HC02: 0.60
+  1PEROVCA01HC02: 0.60
+  05PEROVCA01HC02: 0.60
+  GCT02-B4: 0.81
+  GCT02-B6: 0.81
+  GCT02-B9: 0.81
+  GCT02-B10: 0.81
+  GCT02-B11: 0.81
+
+vcf_tf:
+  OVCA01: 0.60
+  GCT01: 0.98
+  GCT02: 0.81
+  OES01: 1.0
+  OES02: 1.0
+
+# Nanopore summary file of containing timestamps for obtaining real-time sequencing info. Retain only the first 3 columns in the summary files to reduce file size. 
+summary_file:
+  OVCA01: "/path/to/summary_file/OVCA01_DER5172_3_cols.txt"
+  GCT01: "Preprocessing/data/timestamp/GCT01_CYC000056_3_cols.txt"
+  GCT02: "Preprocessing/data/timestamp/GCT02_CYC000057_3_cols.txt"
+  OES01: "Preprocessing/data/timestamp/OES01_CYC000080_20221130_1530_3_cols.txt"
+  OES02: "Preprocessing/data/timestamp/OES02_CYC000106_20230210_1342_3_cols.txt"
+  HC01: "Preprocessing/data/timestamp/HC01_CYC000217_3_col.txt"
+  HC02: "Preprocessing/data/timestamp/HC02_CYC000218_20230829_1632_3_col.txt"
+  HC03: "Preprocessing/data/timestamp/HC03_CYC000177_20230703_1334_3_cols.txt"
+  GCT02-B4: "Preprocessing/data/timestamp/GCT02-B4_20230708_1147_3_cols.txt"
+  GCT02-B6: "Preprocessing/data/timestamp/GCT02_CYC000057_3_cols.txt"
+  GCT02-B9: "Preprocessing/data/timestamp/GCT02-B9_20230708_1148_3_cols.txt"
+  GCT02-B10: "Preprocessing/data/timestamp/GCT02-B10_20230713_1445_3_cols.txt"
+  GCT02-B11: "Preprocessing/data/timestamp/GCT02-B11_20230713_1446_3_cols.txt"
+  10PEROVCA01HC02: "Preprocessing/data/timestamp/10PEROVCA01HC02_20230512_1343_3_cols.txt"
+  2PEROVCA01HC02: "Preprocessing/data/timestamp/2PEROVCA01HC02_20230512_1343_3_cols.txt"
+  1PEROVCA01HC02: "Preprocessing/data/timestamp/1PEROVCA01HC02_CYC000219_20230904_1042_3_cols.txt"
+  05PEROVCA01HC02: "Preprocessing/data/timestamp/05PEROVCA01HC02_CYC000220_20230904_1041_3_cols.txt"
+
+
+### tf params
+error_rates: 0.00082

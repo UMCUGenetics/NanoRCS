@@ -1,0 +1,32 @@
+# Config file for Snakemake workflow
+
+# Define the output directory
+out_dir: "/path/to/output/folder"
+
+# Rule specific params:
+min_qual: [40]
+# Sample specific configurations
+healthy_controls_bam:
+  HC01: "/path/to/HC01.bam"
+  HC02: "/path/to/HC02.bam"
+  HC03: "/path/to/HC03.bam"
+
+samples_bam:
+  SAMPLE: "/path/to/sample.bam"  
+
+vcf:
+  OVCA01: "/path/to/OVCA1_filtered_somatic.vcf.gz"
+  GCT01: "/path/to/GCT01_filtered_somatic.vcf.gz"
+  GCT02: "/path/to/GCT02_filtered_somatic.vcf.gz"
+  OES01: "/path/to/OES01_filtered_PASS_somatic.vcf.gz"
+  OES02: "/path/to/OES02_filtered_PASS_somatic.vcf.gz"
+
+vcf_tf:
+  OVCA01: 0.60
+  GCT01: 0.98
+  GCT02: 0.81
+  OES01: 1.0
+  OES02: 1.0
+
+## parameter for TF inference:
+error_rates: 0.00111
