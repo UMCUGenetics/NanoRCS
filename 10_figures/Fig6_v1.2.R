@@ -135,7 +135,6 @@ remove(tempdf)
 
 
 #### Plot ####
-
 #1 Plot
 plot <- ggplot(plotdf,aes(x=day, y= value, group = Technique)) +
   ggtitle("Timeline GCT02") +
@@ -148,20 +147,19 @@ plot <- ggplot(plotdf,aes(x=day, y= value, group = Technique)) +
   scale_x_continuous(expand = c(0, 0)) +
   expand_limits(x = 600) +
   # Disease
-  geom_rect(data=rects[which(rects$group == "Red"),], inherit.aes=FALSE, aes(xmin=start, xmax=end, ymin=0,ymax=0.65, group=group), color="transparent", fill="firebrick3", alpha=0.1) +
-  geom_rect(data=rects[which(rects$group == "Orange"),], inherit.aes=FALSE, aes(xmin=start, xmax=end, ymin=0,ymax=0.65, group=group), color="transparent", fill="orange2", alpha=0.1) +
-  geom_rect(data=rects[which(rects$group == "Green"),], inherit.aes=FALSE, aes(xmin=start, xmax=end, ymin=0,ymax=0.65, group=group), color="transparent", fill="springgreen3", alpha=0.1)+
+  geom_rect(data=rects[which(rects$group == "Red"),], inherit.aes=FALSE, aes(xmin=start, xmax=end, ymin=0,ymax=0.65, group=group), color="transparent", fill="firebrick3", alpha=0.4) +
+  geom_rect(data=rects[which(rects$group == "Orange"),], inherit.aes=FALSE, aes(xmin=start, xmax=end, ymin=0,ymax=0.65, group=group), color="transparent", fill="orange2", alpha=0.4) +
+  geom_rect(data=rects[which(rects$group == "Green"),], inherit.aes=FALSE, aes(xmin=start, xmax=end, ymin=0,ymax=0.65, group=group), color="transparent", fill="dodgerblue3", alpha=0.4)+
   # Treatment
   geom_vline(xintercept = rects[which(rects$group == "Stripe"),]$start,lty=2, colour = "grey")+
   geom_vline(xintercept = rects[which(rects$group == "Dot"),]$start,lty=3, colour = "grey") +
   # ddPCR and NanoRCS data
-  geom_line(aes(color = Technique, linetype = Technique),linewidth = 0.5) + 
-  scale_color_manual(values=c("grey30","#0070FF","#0070FF","#0070FF"))+
-  scale_linetype_manual(values = c(1,1,1,5))+
-  geom_line(data = plotdf[which(plotdf$Technique == "NanoRCS_CNV"),], linewidth = 0.9, color = "#0070FF")+
-  geom_errorbar(aes(ymin = min,ymax=max), color = "#0070FF", linewidth = 0.35)+
+  geom_line(aes(color = Technique, linetype = Technique), linewidth = 0.8) +
+  scale_color_manual(values=c("grey30","grey30","dodgerblue3","steelblue1"))+
+  scale_linetype_manual(values = c(3,1,1,1))+
+    geom_errorbar(aes(ymin = min,ymax=max), color = "grey30", linewidth = 0.35)+
   geom_point(aes(shape = Technique_covered, color = Technique),size = 2)+
   scale_shape_manual(values=c(19,17,19,19,19))
-
 #2 Save plot
 ggsave(filename = paste(outdir,"GCT02_raw.pdf",sep=""),plot = plot, width = 8.2, height = 3)
+
