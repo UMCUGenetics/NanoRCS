@@ -39,7 +39,7 @@ def get_throughput(a_folder, every_x = 5):
     run_names = []
     for a_file in os.listdir(a_folder):
         if a_file.endswith('.csv'):
-            print(a_file)
+#            print(a_file)
             df1 = pd.read_csv(a_folder + a_file)
             run_name = a_file.split('/')[-1].split('.')[0]
             dfs.append(df1)
@@ -47,7 +47,7 @@ def get_throughput(a_folder, every_x = 5):
     # Collect useful columns
     for a_file in os.listdir(a_folder):
         if a_file.endswith('.csv'):
-            print(a_file)
+#            print(a_file)
             df1 = pd.read_csv(a_folder + a_file)
             run_name = a_file.split('/')[-1].split('.')[0]
             dfs.append(df1)
@@ -58,8 +58,8 @@ def get_throughput(a_folder, every_x = 5):
             df_final = df_x
         else:
             df_final = df_final.join(df_x.loc[:, df1.columns.str.contains('Basecalled Reads Passed')], how='outer',
-                                     rsuffix=run_names[i])
-    df_final[f'Basecalled Reads Passed_{run_names[0]}'] = df_final['Basecalled Reads Passed']
+                                     rsuffix=f'_{run_names[i].split("_")[0]}')
+#    df_final[f'Basecalled Reads Passed_{run_names[0]}'] = df_final['Basecalled Reads Passed']
     df_final.drop(columns=['Basecalled Reads Passed'], inplace=True)
 
     throughput_per_x_min = df_final.loc[:, df_final.columns.str.contains('Basecalled Reads Passed')]
@@ -100,6 +100,24 @@ def get_total_cfDNA_bases(nanorcs_average_read_length_density,
     return df_throughput_each
 
 
+def get_first_non_zero_timepoint(df_throughput_snv1, snv_count):
+    # Filter columns that start with "Tumor SNV detected at"
+    print("Tumor-specific SNV count:", snv_count)
+    tumor_snv_cols = df_throughput_snv1.loc[:, df_throughput_snv1.columns.str.contains('Tumor SNV detected at')]
+    # Replace 0 with NaN
+    tumor_snv_cols = tumor_snv_cols.replace(0, np.nan)
+    # Find the index of the first non-zero value (now non-NaN) in each column
+    first_non_nan_idx = tumor_snv_cols.apply(lambda col: col.first_valid_index())
+
+    # Map these indices to the corresponding experiment times
+    for key, value in first_non_nan_idx.items():
+        print(key)
+        if np.isnan(value):
+            print(f'No tumor SNV discovered in maximal timespan in {key}')
+        else:
+            print(f'Earliest timepoint with {value} is {key}')
+
+
 if __name__ == '__main__':
     ## Variables
     amount_of_tumor_specific_snv_list = [6000, 15000]
@@ -118,8 +136,11 @@ if __name__ == '__main__':
     out_path = '../../output/output_figures/SupplFig3.pdf'
 
     ## PATHS
-   a_folder = '/path/to/sequencing_summary_files'
-   read_length_table = '/path/to/suppl_table_4.csv'
+    # a_folder = '/path/to/sequencing_summary_files'
+    # read_length_table = '/path/to/suppl_table_4.csv'
+
+    a_folder = '/Users/lchen/00_projects/NanoRCS_data/promethION_throughput_files/'
+    read_length_table = '/Users/lchen/00_projects/NanoRCS_data/read_lengths.csv'
 
     ## Get read length distribution in cfDNA NanoRCS reads
     nanorcs_average_read_length_density = get_average_read_length(read_length_table,
@@ -149,7 +170,6 @@ if __name__ == '__main__':
 
     ## 4. Estimate when will discovery of tumor specific SNVs is higher than background
     df_throughput = df_throughput_each.groupby(['Experiment Time (minutes)']).mean(numeric_only=True)
-    df_throughput_snv1 = df_throughput.copy()
     # Create a figure with 3 subplots in a row
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 
@@ -159,11 +179,11 @@ if __name__ == '__main__':
         y='Total cfDNA bases (NanoRCS consensus)',
         hue='Run name',
         palette='Greys',
+        s=40,
         data=df_throughput_each,
         ax=axes[0]
     )
     axes[0].legend()
-    axes[0].set_title('cfDNA Bases vs. Time')
     axes[0].set_ylabel("Total cfDNA bases (NanoRCS consensus)")
     axes[0].set_xlabel("Experiment Time (minutes)")
 
@@ -172,6 +192,7 @@ if __name__ == '__main__':
     palette2 = sns.color_palette("Reds", num_TFs)
     palettes = [palette1, palette2]
     for i, (snv_count, palette) in enumerate(zip(amount_of_tumor_specific_snv_list, palettes)):
+        df_throughput_snv1 = df_throughput.copy()
         for TF in TFs:
             df_throughput_snv1[f'Tumor SNV detected at {TF}'] = np.floor(
                 df_throughput_snv1['Total cfDNA bases (NanoRCS consensus)'] * (
@@ -187,17 +208,19 @@ if __name__ == '__main__':
                 data=df_throughput_snv1,
                 label=f'TF = {TF}',
                 color = palette[color_idx],
+                s=40,
                 ax=axes[i+1]
             )
         sns.scatterplot(x='Experiment Time (minutes)', y=f'Tumor SNV detected at BACKGROUND', data=df_throughput_snv1,
-                        label=f'Background errors', color = 'grey', ax=axes[i+1])
-
+                        label=f'Background errors', color = 'grey', s=20, ax=axes[i+1], )
+        axes[i+1].set_ylim(-3, 200 )
         axes[i+1].legend(bbox_to_anchor=(1, 1))
         axes[i+1].set_xlim(time_tuple)
-        axes[i+1].set_title(f'Tumor SNV = {snv_count}')
+        axes[i+1].set_title(f'Tumor with {snv_count} SNVs')
         axes[i+1].set_ylabel("Tumor SNV detected (n)")
         axes[i+1].set_xlabel("Experiment Time (minutes)")
-
+        # Get numbers:
+        get_first_non_zero_timepoint(df_throughput_snv1, snv_count)
     # Panel 2: Scatterplot for Tumor SNV detected at different TFs
     # Adjust the layout to prevent overlap
     plt.tight_layout()
@@ -210,23 +233,4 @@ if __name__ == '__main__':
 
 
     ## 6. Get the earliest SNV timepoint
-
-    # Filter columns that start with "Tumor SNV detected at"
-    tumor_snv_cols = df_throughput.loc[:, df_throughput.columns.str.contains('Tumor SNV detected at')]
-
-    # Replace 0 with NaN
-    tumor_snv_cols = tumor_snv_cols.replace(0, np.nan)
-
-    # Find the index of the first non-zero value (now non-NaN) in each column
-    first_non_zero_idx = tumor_snv_cols.idxmax()
-
-    # Map these indices to the corresponding experiment times
-    for key, value in first_non_zero_idx.items():
-        print(key)
-        if np.isnan(value):
-            print(f'No tumor SNV discovered in maximal timespan in {key}')
-        else:
-            print(f'Earliest timepoint with {key}')
-            first_non_zero_times = df_throughput['Experiment Time (minutes)'].iloc[int(value)]
-            print(first_non_zero_times)
 
