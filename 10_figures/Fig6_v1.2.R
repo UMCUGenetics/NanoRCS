@@ -105,7 +105,7 @@ rects[which(rects$start < 0),]$start <- 0
 #3 Create a temporary table with all treatment data
 tempdf <- timeline[which(timeline$type == "chemotherapy" | timeline$type == "surgery"),]
 tempdf <- tempdf[which(tempdf$day >= 0),]
-tempdf <- tempdf[which(tempdf$date <= "2020-03-03"),]
+# tempdf <- tempdf[which(tempdf$date <= "2020-03-03"),]
 
 #4 Add this 'treatment data' to the rect table
 rects <- rbind(rects,
