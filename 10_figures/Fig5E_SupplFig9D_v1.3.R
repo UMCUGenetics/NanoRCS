@@ -25,8 +25,8 @@ add.technique.todf <- function(df) {
   # Add a column with the technique to the df
   df$technique = paste(df$sequencing_error_rate," ",df$sequencing_depth,"x",sep="")
   # Add platforms (based on error rate)
-  df$technique = gsub("0.00082","NanoRCS",df$technique)
-  df$technique = gsub("0.00744","Nanopore",df$technique)
+  df$technique = gsub("0.000719205","NanoRCS",df$technique)
+  df$technique = gsub("0.006735166","Nanopore",df$technique)
   # Add techniques (based on error rate and coverage)
   df$technique = gsub("NanoRCS 0.8x","NanoRCS Promethion",df$technique)
   df$technique = gsub("NanoRCS 0.04x","NanoRCS Minion",df$technique)
